@@ -2,7 +2,7 @@
 # Aims to be as similar to normal Vagrant usage as possible
 # Adds Puppet, SSH daemon
 
-FROM centos
+FROM centos:centos6
 MAINTAINER Sam Bashton <sam@bashton.com>
 RUN yum -y install openssh-server
 RUN yum -y install MAKEDEV
