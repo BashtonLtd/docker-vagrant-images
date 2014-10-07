@@ -4,6 +4,19 @@
 
 FROM centos:centos7
 MAINTAINER Sam Bashton <sam@bashton.com>
+# Replace fake systemd with real systemd
+# Lifted from http://jperrin.github.io/centos/2014/09/25/centos-docker-and-systemd/
+RUN yum -y swap -- remove fakesystemd -- install systemd systemd-libs
+RUN yum -y update; yum clean all; \
+(cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
 RUN yum -y install openssh-server
 RUN yum -y install http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
 RUN yum -y install puppet
@@ -24,4 +37,5 @@ RUN sed -i -e 's/Defaults.*requiretty/#&/' /etc/sudoers
 RUN sed -i -e 's/\(UsePAM \)yes/\1 no/' /etc/ssh/sshd_config
 # We need openssh clients to enable file transfer over scp
 RUN yum -y install openssh-clients
-CMD ["/usr/sbin/sshd", "-D"]
+RUN systemctl enable sshd.service
+CMD ["/usr/sbin/init"]
