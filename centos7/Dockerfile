@@ -17,11 +17,9 @@ rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
 rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*;
 VOLUME [ "/sys/fs/cgroup" ]
-RUN yum -y install openssh-server
+RUN yum -y install openssh-server openssh-clients
 RUN yum -y install http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-RUN yum -y install puppet
-# Generate SSH keys
-RUN /usr/sbin/sshd-keygen
+RUN yum -y install puppet hostname
 # Add vagrant user and key
 RUN yum -y install sudo
 RUN useradd --create-home -s /bin/bash vagrant
@@ -35,7 +33,5 @@ RUN chmod 600 /home/vagrant/.ssh/authorized_keys
 RUN chown -R vagrant:vagrant /home/vagrant/.ssh
 RUN sed -i -e 's/Defaults.*requiretty/#&/' /etc/sudoers
 RUN sed -i -e 's/\(UsePAM \)yes/\1 no/' /etc/ssh/sshd_config
-# We need openssh clients to enable file transfer over scp
-RUN yum -y install openssh-clients
 RUN systemctl enable sshd.service
 CMD ["/usr/sbin/init"]
